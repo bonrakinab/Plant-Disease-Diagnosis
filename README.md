@@ -1,42 +1,165 @@
-# Plant-Disease-Diagnosis
-Online Flask Web App for Plant Disease Diagnosis from Images <br>
+# Plant Disease Diagnosis from Leaf Images
 
-<img src="demo.JPG" width="600" height="300"/><br><br>
+A computer-vision project for identifying plant diseases from uploaded leaf images. The repository combines a **TensorFlow/Keras CNN workflow** with a lightweight **Flask inference application** that accepts an image, preprocesses it to 64×64 pixels, and returns the predicted plant-health class.
 
-## Required Tools
+<p align="center">
+  <img src="demo.JPG" alt="Plant disease diagnosis demo" width="700" />
+</p>
+
+## Overview
+
+The project focuses on image-based classification for pepper, potato, and tomato plants. The Flask application loads a saved Keras model and exposes a `/predict` endpoint for image inference.
+
+The prediction code supports **15 classes**:
+
+- Pepper bell — Bacterial spot
+- Pepper bell — Healthy
+- Potato — Early blight
+- Potato — Late blight
+- Potato — Healthy
+- Tomato — Bacterial spot
+- Tomato — Early blight
+- Tomato — Late blight
+- Tomato — Leaf mold
+- Tomato — Septoria leaf spot
+- Tomato — Two-spotted spider mite
+- Tomato — Target spot
+- Tomato — Yellow leaf curl virus
+- Tomato — Mosaic virus
+- Tomato — Healthy
+
+## Inference pipeline
+
+```text
+Leaf image upload
+      │
+      ▼
+Flask `/predict`
+      │
+      ▼
+Secure filename + save upload
+      │
+      ▼
+Resize image to 64 × 64
+      │
+      ▼
+Convert to NumPy array
+      │
+      ▼
+Normalize pixels to [0, 1]
+      │
+      ▼
+Keras CNN prediction
+      │
+      ▼
+argmax → disease / healthy class
 ```
-Python 3.6 or greater, Tensorflow 2, Flask, Gevent, Scikit-Learn
+
+## Repository structure
+
+```text
+Plant-Disease-Diagnosis/
+├── app.py                         # Flask inference server
+├── plant_disease_recognition.ipynb # model-development notebook
+├── demo.JPG                       # application screenshot/demo
+└── README.md
 ```
 
-## Run
+## Flask implementation
 
-```
-1. Open anaconda prompt or command prompt
-2. Open the directory the folder has been saved
-3. type "flask run" on the terminal to run the web app
+`app.py`:
 
-```
-
-## Run the python backend program
-
-```
-
-1. Open the jupyter notebook
-2. Run the file 
-
-```
-
-Open Browser at http://121.0.0.1:5000
+- loads `PlantCNN.h5` with TensorFlow/Keras
+- serves the main page at `/`
+- accepts image uploads at `/predict`
+- saves uploads using `secure_filename`
+- resizes input images to `64 × 64`
+- normalizes pixel values
+- runs `model.predict(...)`
+- selects the highest-probability class with `numpy.argmax`
+- can be served through `gevent.pywsgi.WSGIServer` on port `5000`
 
 ## Dataset
 
-https://www.kaggle.com/emmarex/plantdisease
+The model-development notebook is based on the **PlantVillage** plant-disease image dataset distributed through Kaggle:
 
-## Link for the diagram drawn
-https://lucid.app/lucidchart/b26e81d6-6d07-4c3a-b0d3-3fe401941569/edit?viewport_loc=-76%2C3%2C1365%2C575%2C0_0&invitationId=inv_bf93d3e3-c377-4fdf-bf1b-081b8e334cd6#
+`https://www.kaggle.com/emmarex/plantdisease`
 
+## Local setup
 
+A representative Python environment requires:
 
+```bash
+pip install tensorflow numpy scikit-image flask werkzeug gevent pillow jupyter
+```
 
+Then run the development notebook as needed:
 
+```bash
+jupyter notebook plant_disease_recognition.ipynb
+```
 
+### Running the Flask app
+
+The committed `app.py` expects several runtime assets:
+
+```text
+PlantCNN.h5
+uploads/
+templates/index.html
+```
+
+These assets are referenced by the application but are **not present in the current repository snapshot**. Add the trained model and UI/runtime folders before launching the web app.
+
+Once those assets are available:
+
+```bash
+python app.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:5000/
+```
+
+## Tech stack
+
+| Area | Technology |
+|---|---|
+| Deep learning | TensorFlow / Keras |
+| Image processing | Keras preprocessing, NumPy, scikit-image |
+| Backend | Flask |
+| Serving | Gevent WSGI |
+| Experimentation | Jupyter Notebook |
+| Domain | Computer vision / plant disease classification |
+
+## What this project demonstrates
+
+- Multi-class image classification
+- CNN-based inference
+- Image resizing and normalization
+- Saved-model loading with Keras
+- Mapping model outputs to human-readable labels
+- Connecting an ML model to a Flask endpoint
+
+## Limitations
+
+This project is an academic prototype and should not be used as a substitute for agricultural or plant-pathology expertise. Accuracy can change significantly with lighting, camera conditions, backgrounds, plant varieties, and diseases not represented in the training data.
+
+The current repository also does not contain all assets required to launch the Flask interface directly.
+
+## Possible improvements
+
+- Commit a reproducible `requirements.txt`
+- Add a model-download/setup script instead of storing large weights in Git
+- Add confidence scores to prediction responses
+- Add validation for file type and upload size
+- Add Grad-CAM or another visual explanation method
+- Evaluate on real-world images outside PlantVillage
+- Containerize the inference service
+- Add automated tests for preprocessing and API behavior
+
+---
+
+This repository demonstrates an end-to-end path from a CNN experiment notebook to a simple web-based image-classification service.
